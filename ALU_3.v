@@ -10,11 +10,11 @@ parameter SUB = 5'b01000;
 parameter SLL = 5'b00001;
 parameter SLTS = 5'b00010;
 parameter SLTU = 5'b00011;
-parameter XOR = 5'b000100;
-parameter SRL = 5'b000101;
-parameter SRA = 5'b701101;
-parameter OR = 5'b700110;
-parameter AND = 5'b700111;
+parameter XOR = 5'b00100;
+parameter SRL = 5'b00101;
+parameter SRA = 5'b01101;
+parameter OR = 5'b00110;
+parameter AND = 5'b00111;
 parameter EQ = 5'b11000;
 parameter NE = 5'b11001;
 parameter LTS = 5'b11100;
@@ -41,21 +41,18 @@ wire out_notequal;
 
 assign out_A_ne_menshe_B_zn = ~out_A_menshe_B_zn;
 assign out_A_ne_menshe_B = ~out_A_menshe_B;
-assign out_equal = (A==B) ? 32'b1 : 32'b0;
-assign out_A_menshe_B = (A<B) ? 32'b1 : 32'b0;
+assign out_equal = (A==B) ? 1'b1 : 1'b0;
+assign out_A_menshe_B = (A<B) ? 1'b1 : 1'b0;
 assign out_notequal = ~out_equal;
 
 assign out_add = A+B;
 assign out_sub = A-B;
 assign out_sll = A << B;
-assign out_slts = out_A_menshe_B_zn;
-assign out_sltu = out_A_menshe_B;
+assign out_slts = {{31{1'b0}},out_A_menshe_B_zn};
+assign out_sltu = {{31{1'b0}},out_A_menshe_B};
 assign out_srl = A >> B;
 assign out_sra = A >>>B;
 
-
-
-assign A_shift_1 = {A[30:0], 1'b0};
 
 assign Out_ALU = (Upr_ALU == ADD) ? out_add:
 					  (Upr_ALU == SUB) ? out_sub:
@@ -70,10 +67,10 @@ assign Out_ALU = (Upr_ALU == ADD) ? out_add:
 
 assign C = (Upr_ALU == EQ) ? out_equal:
 			  (Upr_ALU == NE) ? out_notequal:
-			  (Upr_ALU == LTS) ? out_A_menshe_B:
-			  (Upr_ALU == GES) ? out_A_ne_menshe_B:
-			  (Upr_ALU == LTU) ? out_A_menshe_B_zn:
-			  (Upr_ALU == GEU) ? out_A_ne_menshe_B_zn:32'b0;
+			  (Upr_ALU == LTS) ? out_A_menshe_B_zn:
+			  (Upr_ALU == GES) ? out_A_ne_menshe_B_zn:
+			  (Upr_ALU == LTU) ? out_A_menshe_B:
+			  (Upr_ALU == GEU) ? out_A_ne_menshe_B:1'b0;
 					  
 									  
 or_32_b or_ALU (
