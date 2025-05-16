@@ -3,21 +3,25 @@ input logic         clk_i,
 input logic         rst_i,
 input logic  [31:0] instr_i,
 input logic  [31:0] mem_rd_i,
-output logic        mem_wd_o,
+output logic [31:0] mem_wd_o,
 output logic        mem_we_o,
-output logic        mem_addr_o,
+output logic [31:0] mem_addr_o,
 output logic [2:0]  mem_size_o,
 output logic        mem_req_o,
-output logic [31:0] instr_addr_o,
+output logic [31:0] instr_addr_o
 );
+
+assign mem_wd_o = rd2;
+assign mem_addr_o = alu_res;
+
 
 //instruction address (pc)
 logic [31:0] pc;
 logic [31:0] pc_next;
 logic pc_en;
 
-always_ff @(posedge clk) begin
-  if (rst) begin
+always_ff @(posedge clk_i) begin
+  if (rst_i) begin
     pc = '0;
   end else begin
     if (pc_en) begin
@@ -34,11 +38,17 @@ logic [31:0] fetched_instr;
 assign fetched_instr = instr_i;
 
   //defining constants
-logic [11:0] cI, [31:0] I;
-logic [11:0] cS, [31:0] S;
-logic [12:0] cB, [31:0] B;
-logic [20:0] cJ, [31:0] J;
-logic [19:0] cU, [31:0] U;
+logic [11:0] cI;
+logic [11:0] cS;
+logic [12:0] cB;
+logic [20:0] cJ;
+logic [19:0] cU;
+
+logic [31:0] I;
+logic [31:0] S;
+logic [31:0] B;
+logic [31:0] J;
+logic [31:0] U;
 
   //from instr
 assign cI =   fetched_instr[31:20];
@@ -63,17 +73,17 @@ assign cJ = {
 assign cU =   fetched_instr[31:12];
 
   //to 32 bit
-assign  I = {20{cI[11]}, cI};
-assign  S = {20{cS[11]}, cS};
-assign  B = {19{cB[12]}, cB};
-assign  J = {11{cJ[20]}, cJ};
+assign  I = {{20{cI[11]}}, cI};
+assign  S = {{20{cS[11]}}, cS};
+assign  B = {{19{cB[12]}}, cB};
+assign  J = {{11{cJ[20]}}, cJ};
 assign  U = {cU, 12'b0};
 
 //control signals
 logic [1:0]   a_sel;
 logic [2:0]   b_sel;
-logic [4:0]   alu_op;
-logic [2:0]   csr_op;
+logic [4:0]   alu_oper;
+logic [2:0]   csr_oper;
 logic         csr_we;
 logic         mem_req;
 logic         mem_we;
@@ -96,7 +106,7 @@ decoder dc1 (
 .fetched_instr_i  (fetched_instr),
 .a_sel_o          (a_sel),
 .b_sel_o          (b_sel),
-.alu_op_o         (oper),
+.alu_op_o         (alu_oper),
 .csr_op_o         (csr_oper),
 .csr_we_o         (csr_we),
 .mem_req_o        (mem_req),
@@ -132,41 +142,40 @@ always_comb begin
   endcase
 end
 
-Register_file meme1 (
-  .clk(clk),
+REG_FILE meme1 (
+  .clk(clk_i),
 
-  .WrEn(we),
-  .upr_in(wa),
-  .in(wdata),
+  .WE(we),
+  .WA(wa),
+  .WD(wdata),
 
-  .upr_A(ra1),
-  .upr_B(ra2),
+  .RA1(ra1),
+  .RA2(ra2),
 
-  .A(rd1),
-  .B(rd2)
+  .RD1(rd1),
+  .RD2(rd2)
 );
 
 //alu
 logic [31:0] alu_a;
 logic [31:0] alu_b;
-logic [4:0]  alu_oper;
-logic [31:0] alu_res, 
-logic flag;
+logic [31:0] alu_res;
+logic        flag;
 
 always_comb begin
-  oper = alu_op;
   case (a_sel)
-    2'd0:     a = rd1;
-    2'd1:     a = pc;
-    2'd2:     a = '0;
-    default:  a = '0;
+    2'd0:     alu_a = rd1;
+    2'd1:     alu_a = pc;
+    2'd2:     alu_a = '0;
+    default:  alu_a = '0;
   endcase
   case (b_sel)
-    3'd0:     b = rd2;
-    3'd1:     b = I;
-    3'd2:     b = U;
-    3'd3:     b = S;
-    3'd4:     b = 32'd4;
+    3'd0:     alu_b = rd2;
+    3'd1:     alu_b = I;
+    3'd2:     alu_b = U;
+    3'd3:     alu_b = S;
+    3'd4:     alu_b = 32'd4;
+    default:  alu_b = 32'b0;
   endcase
 end
 
@@ -186,11 +195,11 @@ logic [31:0] bj4_addr;
 logic        bj_sel;
 logic        bj4_sel;
 
-assign I_addr = rd1 + I;
+assign I_addr   = rd1 + I;
 assign bj4_addr = bj4 + pc;
 
-assign bj_sel   = b;
-assign bj4_sel  = jal | (flag & b);
+assign bj_sel   = branch;
+assign bj4_sel  = jal | (flag & branch);
 
 mux2 mux_bj (
 .a_1(B),
