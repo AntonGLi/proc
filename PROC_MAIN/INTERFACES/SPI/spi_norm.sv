@@ -69,6 +69,7 @@ begin
       bit_cntr_next = 4'b0;
       if (load_data)
       begin
+        busy = 1;
         shreg_next = data;
         next_state = TRANSMIT_DATA_FSM;
       end
@@ -81,7 +82,7 @@ begin
         busy          = 1;
         bit_cntr_next = bit_cntr + 4'b1;
         shreg_next    = {shreg[6:0], miso};
-        if (bit_cntr == 4'b1000 && ~sck)
+        if (bit_cntr == 4'b0111 && (clk_to_sck_cntr == end_clk_cntr_val))
         begin
           next_state = READY_FSM;
           received_data_next = shreg;
