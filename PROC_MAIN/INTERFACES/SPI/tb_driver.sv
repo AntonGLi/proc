@@ -1,0 +1,56 @@
+
+`timescale 1 ps/1 ps
+module spi_driver_simple_vlg_vec_tst();
+// constants                                           
+// general purpose registers
+reg CLK;
+reg RESET;
+reg miso;
+// wires                                               
+wire [3:0] LED;
+wire cs;
+wire dc;
+wire mosi;
+wire reset_display;
+wire sck;
+
+// assign statements (if any)                          
+spi_driver_simple i1 (
+// port map - connection between master ports and signals/registers   
+	.CLK(CLK),
+	.LED(LED),
+	.RESET(RESET),
+	.cs(cs),
+	.dc(dc),
+	.miso(miso),
+	.mosi(mosi),
+	.reset_display(reset_display),
+	.sck(sck)
+);
+initial 
+begin 
+#10000000 $stop;
+end 
+
+// CLK
+always
+begin
+	CLK = 1'b0;
+	CLK = #5000 1'b1;
+	#5000;
+end 
+
+// RESET
+initial
+begin
+	RESET = 1'b0;
+	RESET = #60000 1'b1;
+end 
+
+// miso
+initial
+begin
+	miso = 1'b0;
+end 
+endmodule
+
