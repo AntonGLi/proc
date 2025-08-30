@@ -14,8 +14,17 @@ output logic reset_display
 
 );
 
-localparam DIV_FREQ_BY  = 3;
-localparam NUM_BYTES    = 8;
+//waiter to debug
+
+logic [22:0] waiter;
+logic wait_en;
+
+//parameters for spi module
+
+localparam DIV_FREQ_BY  = 50;
+localparam NUM_BYTES    = 22;
+
+//general definitions
 
 logic rst;
 assign rst = ~RESET;
@@ -26,8 +35,8 @@ wire busy;
 
 reg load_data;
 
-reg [7:0] ROM [0:30]; // | 1bit | 2bit | 3bit | 4bit | 5bit | 6bit | 7bit | 8bit |
-reg    DC_ROM [0:30]; // |  dc  |
+reg [7:0] ROM [0:128]; // | 1bit | 2bit | 3bit | 4bit | 5bit | 6bit | 7bit | 8bit |
+reg    DC_ROM [0:128]; // |  dc  |
 reg [7:0] num_byte;
 
 initial begin
@@ -59,9 +68,10 @@ always_ff @(posedge CLK) begin
 		load_data <= 0;
 	end
 	else begin
-		if (go_upper & ~busy) begin
+		if (~wait_en & ~busy) begin
 			load_data <= 1;
-			num_byte <= num_byte + 1;
+			if (go_upper)
+				num_byte <= num_byte + 1;
 		end
 		else
 			load_data <= 0;
@@ -90,6 +100,7 @@ assign dc   = DC_ROM[num_byte];
 
 wire miso = 0; //not used
 
+
 spi_norm
 #(.DIV_FREQ_BY(DIV_FREQ_BY)) // CLK over SCK 
 spi_ent (
@@ -107,6 +118,28 @@ spi_ent (
 .busy(busy),
 .received_data(received_data)
 );
+
+//1 second counter
+
+
+always_ff @(posedge CLK) begin
+	if (rst) begin
+		waiter <= '0;
+		wait_en <= 0;
+	end
+	else begin
+		if (busy) begin
+			wait_en <= 1;
+		end else begin
+			if (wait_en) begin
+				waiter <= waiter + 1;
+			end
+			if (waiter == '1) begin
+				wait_en <= 0;
+			end 
+		end
+	end
+end
 
 endmodule
 

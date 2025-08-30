@@ -30,7 +30,7 @@ initial
 begin 
 $dumpfile("dump.vcd");
 $dumpvars;
-#15000 $stop;
+#150000 $stop;
 end 
 
 // CLK
