@@ -16,15 +16,15 @@ wire sck;
 
 // module
 spi_driver i1 (
-	.CLK(CLK),
-	.LED(LED),
-	.RESET(RESET),
-	.cs(cs),
-	.dc(dc),
-	.mosi(mosi),
-	.reset_display(reset_display),
-	.sck(sck),
-	.KEY(KEY)
+  .CLK(CLK),
+  .LED(LED),
+  .RESET(RESET),
+  .cs(cs),
+  .dc(dc),
+  .mosi(mosi),
+  .reset_display(reset_display),
+  .sck(sck),
+  .KEY(KEY)
 );
 initial 
 begin 
@@ -42,12 +42,12 @@ end
 // RESET
 initial
 begin
-	CLK = 0;
-	RESET = 1'b0;
-	KEY = '1;
-	RESET = #75 1'b1;
-	KEY = '0;
-	#100 KEY = '1;
+  CLK = 0;
+  RESET = 1'b0;
+  KEY = '1;
+  RESET = #75 1'b1;
+  KEY = '0;
+  #100 KEY = '1;
 end
 
 endmodule

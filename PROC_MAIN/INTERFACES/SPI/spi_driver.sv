@@ -16,12 +16,12 @@ output logic reset_display
 
 //waiter to debug
 
-logic [22:0] waiter;
+logic [2:0] waiter;
 logic wait_en;
 
 //parameters for spi module
 
-localparam DIV_FREQ_BY  = 50;
+localparam DIV_FREQ_BY  = 4;
 localparam NUM_BYTES    = 22;
 
 //general definitions
@@ -40,8 +40,8 @@ reg    DC_ROM [0:128]; // |  dc  |
 reg [7:0] num_byte;
 
 initial begin
-	$readmemh("bytes.txt", ROM);
-	$readmemb("dc.txt", DC_ROM);
+  $readmemh("bytes.txt", ROM);
+  $readmemb("dc.txt", DC_ROM);
 end
 
 logic go_upper;
@@ -50,32 +50,32 @@ logic end_count;
 //go upper enable logic
 
 always_ff @(posedge CLK) begin
-	if (rst)
-		go_upper <= 0;
-	else begin
-		if ( ~KEY[0] & ~go_upper & ~end_count)
-			go_upper <= 1;
-		else if (end_count)
-			go_upper <= 0;
-	end
+  if (rst)
+    go_upper <= 0;
+  else begin
+    if ( ~KEY[0] & ~go_upper & ~end_count)
+      go_upper <= 1;
+    else if (end_count)
+      go_upper <= 0;
+  end
 end
 
 //byte counter and load data logic
 
 always_ff @(posedge CLK) begin
-	if (rst) begin
-		num_byte <= 0;
-		load_data <= 0;
-	end
-	else begin
-		if (~wait_en & ~busy) begin
-			load_data <= 1;
-			if (go_upper)
-				num_byte <= num_byte + 1;
-		end
-		else
-			load_data <= 0;
-	end
+  if (rst) begin
+    num_byte <= 0;
+    load_data <= 0;
+  end
+  else begin
+    if (~wait_en & ~busy) begin
+      load_data <= 1;
+      if (go_upper)
+        num_byte <= num_byte + 1;
+    end
+    else
+      load_data <= 0;
+  end
 end
 
 //end count logic
@@ -123,22 +123,22 @@ spi_ent (
 
 
 always_ff @(posedge CLK) begin
-	if (rst) begin
-		waiter <= '0;
-		wait_en <= 0;
-	end
-	else begin
-		if (busy) begin
-			wait_en <= 1;
-		end else begin
-			if (wait_en) begin
-				waiter <= waiter + 1;
-			end
-			if (waiter == '1) begin
-				wait_en <= 0;
-			end 
-		end
-	end
+  if (rst) begin
+    waiter <= '0;
+    wait_en <= 0;
+  end
+  else begin
+    if (busy) begin
+      wait_en <= 1;
+    end else begin
+      if (wait_en) begin
+        waiter <= waiter + 1;
+      end
+      if (waiter == '1) begin
+        wait_en <= 0;
+      end 
+    end
+  end
 end
 
 endmodule

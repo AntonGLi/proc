@@ -35,7 +35,6 @@ logic [3:0] bit_cntr_next;
 logic [DIV_FREQ_WIDTH-1:0] clk_to_sck_cntr;
 
 logic sck_next;
-logic [7:0] received_data_next;
 
 wire  [DIV_FREQ_WIDTH-1:0] rst_clk_cntr_val = '0;
 
@@ -58,8 +57,6 @@ assign mosi          = shreg[7];
 always_comb
 begin
   next_state  = state;
-  
-  received_data_next = received_data;
 
   case(state)
     READY_FSM:
@@ -67,14 +64,13 @@ begin
       busy          = 0;
       cs            = 1;
       bit_cntr_next = 4'b0;
+      shreg_next    = shreg;
       if (load_data)
       begin
         busy = 1;
         shreg_next = data;
         next_state = TRANSMIT_DATA_FSM;
       end
-      else
-        shreg_next  = '0;
     end
     TRANSMIT_DATA_FSM:
       begin
@@ -85,7 +81,6 @@ begin
         if (bit_cntr == 4'b0111 && (clk_to_sck_cntr == end_clk_cntr_val))
         begin
           next_state = READY_FSM;
-          received_data_next = shreg;
         end
       end
   endcase
@@ -112,11 +107,7 @@ always_ff @(posedge clk)
       bit_cntr <= bit_cntr_next;
 
 
-always_ff @(posedge clk)
-    if (rst)
-        received_data <= '0;
-    else
-        received_data <= received_data_next;
+assign received_data = shreg;
 
 endmodule
 
