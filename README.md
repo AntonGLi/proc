@@ -1,3 +1,1 @@
-суда можно кидат код вместо группы процессора.
-суда нужно кидат код, если вы взяли на себя описание блока.
-код здес нужно для удобоваримого соединения блоков в рамках одного проца.
+Some RTL for my projects, especially, for single-cycle RV32I CPU core (tested in simulations). Also, SPI-module (tested) and floating point divider (not finished). 
