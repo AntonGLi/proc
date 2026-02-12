@@ -62,16 +62,16 @@ always_ff @(posedge clk) begin
       
       cnt_shift <= cnt_shift + 5'd1;
 
-      if (mantiss_a >= mantiss_b) begin
-        mantiss_c <= mantiss_c | (23'd1 << (5'd22-cnt_shift));
-        mantiss_a <= (mantiss_a - mantiss_b) << 1'b1;;
+      if (mantiss_a >= {1'b0, mantiss_b}) begin
+        mantiss_c <= {mantiss_c[21:0], 1'b1};
+        mantiss_a <= (mantiss_a - {1'b0, mantiss_b}) << 1'b1;
       end
       
       else begin
         
         mantiss_a <= (mantiss_a << 1);
 
-        if (mantiss_a == '0) begin
+        if (cnt_shift == 22) begin
           busy <= '0;
           res_vld <= '1;
         end

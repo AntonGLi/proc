@@ -32,11 +32,10 @@ initial begin
   $finish;
 end
 
-initial begin
+initial
   clk = 0;
-  forever begin
-    #50 clk = ~clk;
-  end
-end
+
+always
+  #10 clk = ~clk;
 
 endmodule
